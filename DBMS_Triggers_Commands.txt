@@ -1,0 +1,103 @@
+mysql> use eventticketbooking;
+Database changed
+mysql> show tables;
++------------------------------+
+| Tables_in_eventticketbooking |
++------------------------------+
+| concert                      |
+| cricket_match                |
+| customer                     |
+| customer_activity_log        |
+| event                        |
+| movie                        |
+| payment                      |
+| seat_category                |
+| standup_comedy               |
+| ticket                       |
+| venue                        |
++------------------------------+
+11 rows in set (0.01 sec)
+
+mysql> select * from customer;
++---------+---------------+------------+--------+----------------------+------------+---------------+---------------------+
+| Cust_ID | Cust_Name     | DOB        | Gender | Email                | Phone      | Address       | Registration_Date   |
++---------+---------------+------------+--------+----------------------+------------+---------------+---------------------+
+|       1 | Alice Johnson | 1990-05-10 | NULL   | alice@example.com    | 555-0001   | NULL          | 2025-10-25 13:54:16 |
+|       2 | Bob Smith     | 1985-08-20 | NULL   | bob@example.com      | 555-0002   | NULL          | 2025-10-25 13:54:16 |
+|       3 | Carol Senior  | 1955-03-01 | NULL   | carol@example.com    | 555-0003   | NULL          | 2025-10-25 13:54:16 |
+|       4 | Alan Walker   | 1994-02-03 | Male   | alanwalker@gmail.com | 555-1010   | 345 Park Lane | 2025-10-25 14:09:07 |
+|       5 | Jimmy Carter  | 2005-02-15 | Male   | jc@hotmail.com       | 9090453722 | 896 May Fair  | 2025-10-25 14:12:34 |
++---------+---------------+------------+--------+----------------------+------------+---------------+---------------------+
+5 rows in set (0.00 sec)
+
+mysql> insert into customer(cust_name,mail)values('james','jamesxced');
+ERROR 1054 (42S22): Unknown column 'mail' in 'field list'
+mysql> insert into customer(cust_name,email)values('james','jamesxced');
+ERROR 1644 (45000): Invalid email format.
+mysql> CALL BookTicket(
+    ->
+    ->     2,
+    ->
+    ->     2,
+    ->
+    ->     'Standard',
+    ->
+    ->     'D13',
+    ->
+    ->     'Debit Card'
+    ->
+    -> );
+Query OK, 0 rows affected (0.06 sec)
+
+mysql> SELECT * FROM seat_category;
++-------------+----------+---------------+-----------+------------+-----------------+------------------+
+| Category_ID | Event_ID | Category_Name | Status    | Base_Price | Available_Seats | Price_Multiplier |
++-------------+----------+---------------+-----------+------------+-----------------+------------------+
+|           1 |        1 | VIP           | Available |     100.00 |            1000 |             1.50 |
+|           2 |        1 | General       | Available |      50.00 |            6993 |             1.00 |
+|           3 |        2 | Premium       | Available |      12.00 |              50 |             1.25 |
+|           4 |        2 | Standard      | Available |      10.00 |             147 |             1.00 |
+|           5 |        3 | Gold Class    | Available |      20.00 |             100 |             1.50 |
+|           6 |        3 | Standard      | Available |      12.00 |             397 |             1.00 |
+|           9 |        4 | VIP           | Sold Out  |     200.00 |               0 |             1.50 |
+|          10 |        4 | General       | Sold Out  |     100.00 |               0 |             1.25 |
++-------------+----------+---------------+-----------+------------+-----------------+------------------+
+8 rows in set (0.00 sec)
+
+mysql> -- Attempt to book the 6th ticket for Alice for Event 1
+mysql> CALL BookTicket(
+    ->     1,
+    ->     1,
+    ->     'General',
+    ->     'C18',
+    ->     'Credit Card'
+    -> );
+ERROR 1644 (45000): Booking limit exceeded. Customer already holds the maximum number of tickets (5) for this event.
+mysql> -- Find Bob's latest ticket (Ticket_No 7, assuming sequential inserts)
+mysql> SET @bob_ticket_no = (
+    ->     SELECT MAX(Ticket_No)
+    ->     FROM Ticket
+    ->     WHERE Cust_ID = 2 AND Event_ID = 2
+    -> );
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> -- Update the status to 'Canceled'
+mysql> UPDATE Ticket
+    -> SET Status = 'Canceled'
+    -> WHERE Ticket_No = @bob_ticket_no;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT Category_Name, Available_Seats FROM Seat_Category WHERE Event_ID = 2;
++---------------+-----------------+
+| Category_Name | Available_Seats |
++---------------+-----------------+
+| Premium       |              50 |
+| Standard      |             148 |
++---------------+-----------------+
+2 rows in set (0.00 sec)
+
+mysql> DELETE FROM Event WHERE Event_ID = 1;
+ERROR 1644 (45000): Cannot delete event with active bookings. Cancel all tickets first.
+mysql>
