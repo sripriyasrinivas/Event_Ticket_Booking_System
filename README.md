@@ -56,7 +56,7 @@ You must have the following software installed:
     |-- app.py             <-- Flask API (main entry point)
     |-- templates/
     |   |-- index.html     <-- Frontend UI
-    |-- project_sql.sql    <-- (The comprehensive SQL file)
+    |-- Event_Ticket_Booking.sql    <-- (The comprehensive SQL file)
     ```
 
 ### 4\. Run the Application
